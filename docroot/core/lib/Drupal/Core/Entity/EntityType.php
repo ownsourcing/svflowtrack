@@ -311,10 +311,15 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
       $this->checkStorageClass($this->handlers['storage']);
     }
 
-    // Automatically add the EntityChanged constraint if the entity type tracks
-    // the changed time.
+    // Automatically add the "EntityChanged" constraint if the entity type
+    // tracks the changed time.
     if ($this->entityClassImplements(EntityChangedInterface::class)) {
       $this->addConstraint('EntityChanged');
+    }
+    // Automatically add the "EntityUntranslatableFields" constraint if we have
+    // an entity type supporting translatable fields and pending revisions.
+    if ($this->entityClassImplements(ContentEntityInterface::class)) {
+      $this->addConstraint('EntityUntranslatableFields');
     }
 
     // Ensure a default list cache tag is set.
@@ -677,7 +682,15 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * {@inheritdoc}
    */
   public function getBundleLabel() {
-    return (string) $this->bundle_label;
+    // If there is no bundle label defined, try to provide some sensible
+    // fallbacks.
+    if (!empty($this->bundle_label)) {
+      return (string) $this->bundle_label;
+    }
+    elseif ($bundle_entity_type_id = $this->getBundleEntityType()) {
+      return (string) \Drupal::entityTypeManager()->getDefinition($bundle_entity_type_id)->getLabel();
+    }
+    return (string) new TranslatableMarkup('@type_label bundle', ['@type_label' => $this->getLabel()], [], $this->getStringTranslation());
   }
 
   /**
