@@ -16,7 +16,7 @@ createdb:
 	mysql -h mysql -u tugboat -ptugboat -e "create database svflowtrack;"
 
 importdb:
-	scp intme@ime-client.com:tugboat/svflowtrack.sql.gz /tmp/svflowtrack.sql.gz
+	scp -P 2222 -o PubkeyAuthentication=yes intme@ime-client.com:tugboat/svflowtrack.sql.gz /tmp/svflowtrack.sql.gz
 	zcat /tmp/svflowtrack.sql.gz | mysql -h mysql -u tugboat -ptugboat svflowtrack
 
 importfiles:
